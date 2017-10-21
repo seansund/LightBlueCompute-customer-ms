@@ -1,0 +1,3 @@
+®My JSON String:{"customerId":"asdgadsfads","email":"my@email.com","firstName":"John","lastName":"Smith","imageUrl":"/image/myimage.jpg","username":"user1","password":"asdf"}
+·Marshalled Customer to JSON:{"customerId":"abcdefgh","email":"my@email.com","firstName":"Name","lastName":"Last","imageUrl":"/image/myimage.jpg","username":"user1","password":"asdf"}
+ªMy JSON String:{"customerId":"abcdefgh","email":"my@email.com","firstName":"Name","lastName":"Last","imageUrl":"/image/myimage.jpg","username":"user1","password":"asdf"}

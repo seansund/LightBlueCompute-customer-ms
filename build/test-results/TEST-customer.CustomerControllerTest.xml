@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="customer.CustomerControllerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2017-09-19T22:39:44" hostname="seans-mbp-2.dfw.ibm.com" time="0.138">
+  <properties/>
+  <testcase name="testMarshalFromJson" classname="customer.CustomerControllerTest" time="0.121"/>
+  <testcase name="testMarshalToJson" classname="customer.CustomerControllerTest" time="0.016"/>
+  <system-out><![CDATA[My JSON String:{"customerId":"asdgadsfads","email":"my@email.com","firstName":"John","lastName":"Smith","imageUrl":"/image/myimage.jpg","username":"user1","password":"asdf"}
+Marshalled Customer to JSON:{"customerId":"abcdefgh","email":"my@email.com","firstName":"Name","lastName":"Last","imageUrl":"/image/myimage.jpg","username":"user1","password":"asdf"}
+My JSON String:{"customerId":"abcdefgh","email":"my@email.com","firstName":"Name","lastName":"Last","imageUrl":"/image/myimage.jpg","username":"user1","password":"asdf"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

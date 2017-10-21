@@ -1,0 +1,10 @@
+applications:
+- path: build/libs/micro-customer-0.0.1.war
+  memory: 512M
+  instances: 1
+  domain: mybluemix.net
+  name: customer-seansund
+  host: customer-seansund
+  disk_quota: 1024M
+  services:
+  - cloudantdb
