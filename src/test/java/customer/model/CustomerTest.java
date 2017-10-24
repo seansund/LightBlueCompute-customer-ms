@@ -1,6 +1,4 @@
-package customer;
-
-import java.util.Random;
+package customer.model;
 
 import org.junit.Test;
 
@@ -10,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import customer.model.Customer;
 
 
-public class CustomerControllerTest {
+public class CustomerTest {
 	
 	
 	@Test
@@ -48,12 +46,9 @@ public class CustomerControllerTest {
 		myJsonStr.append("}");
 		
 		final String myJson = myJsonStr.toString();
-		System.out.println("Marshalled Customer to JSON:" + myJson);
-		System.out.println("My JSON String:" + myJson);
 		
 		final JsonNode jsonObj = mapper.readTree(json);
 		final JsonNode myJsonObj = mapper.readTree(myJson);
-		
 		
 		assert(jsonObj.equals(myJsonObj));
 	}
@@ -79,7 +74,6 @@ public class CustomerControllerTest {
 		myJsonStr.append("}");
 		
 		final String myJson = myJsonStr.toString();
-		System.out.println("My JSON String:" + myJson);
 		
 		// marshall json to Customer object
 		
@@ -93,7 +87,5 @@ public class CustomerControllerTest {
 		assert(inv.getUsername().equals("user1"));
 		assert(inv.getPassword().equals("asdf"));
 		assert(inv.getEmail().equals("my@email.com"));
-		
-		
 	}
 }
