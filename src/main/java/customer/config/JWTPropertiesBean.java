@@ -10,6 +10,16 @@ public class JWTPropertiesBean {
 	private boolean enabled;
 	private String key;
 	
+	public JWTPropertiesBean() {
+		super();
+	}
+	
+	public JWTPropertiesBean(boolean enabled, String key) {
+		super();
+		this.enabled = enabled;
+		this.key = key;
+	}
+
 	public boolean getEnabled() {
 		return enabled;
 	}

@@ -1,5 +1,6 @@
 package customer.config;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -19,7 +20,16 @@ public class JWTPropertiesBeanTest {
 	private JWTPropertiesBean bean;
 	
 	@Test
-	public void verifyProperties() {
+	public void verify_JWTPropertiesBean_from_properties() {
 		assertThat(bean.getEnabled(), is(false));
+		assertThat(bean.getKey(), is(equalTo("short_key")));
+	}
+	
+	@Test
+	public void verify_JWTPropertiesBean_from_constructor() {
+		bean = new JWTPropertiesBean(true, "another_key");
+		
+		assertThat(bean.getEnabled(), is(true));
+		assertThat(bean.getKey(), is(equalTo("another_key")));
 	}
 }

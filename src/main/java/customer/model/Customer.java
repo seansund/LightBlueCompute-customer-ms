@@ -13,6 +13,22 @@ public class Customer {
 	private String email;
 	private String imageUrl;
 	
+	public Customer() {
+		super();
+	}
+	
+	public Customer(String id, String username, String password, String firstName, String lastName, String email,
+			String imageUrl) {
+		super();
+		this._id = id;
+		this.username = username;
+		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+		this.imageUrl = imageUrl;
+	}
+
 	public String getCustomerId() {
 		return _id;
 	}

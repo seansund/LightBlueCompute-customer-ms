@@ -2,10 +2,8 @@ package customer;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,8 +26,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.cloudant.client.api.ClientBuilder;
-import com.cloudant.client.api.CloudantClient;
 import com.cloudant.client.api.Database;
 import com.cloudant.client.api.model.Response;
 import com.cloudant.client.org.lightcouch.NoDocumentException;
@@ -37,7 +33,6 @@ import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 
-import customer.config.CloudantPropertiesBean;
 import customer.config.JWTPropertiesBean;
 import customer.model.Customer;
 
@@ -49,55 +44,24 @@ import customer.model.Customer;
 public class CustomerController {
     
     private static Logger logger =  LoggerFactory.getLogger(CustomerController.class);
-    private Database cloudant;
-    
-    @Autowired
-    private CloudantPropertiesBean cloudantProperties;
     
     @Autowired
     private JWTPropertiesBean jwtProperties;
-
+    
+    @Autowired
+    private CustomerDatabaseBuilder dbBuilder;
+    
     private boolean jwtEnabled;
     private byte[] secret;
-
+    private Database cloudant;
+    
     @PostConstruct
-    private void init() throws MalformedURLException {
-        logger.debug(cloudantProperties.toString());
+    protected void init() throws MalformedURLException {
+    		System.out.println("Init!!!");
+        cloudant = dbBuilder.createDatabase();
         
-        try {
-            logger.info("Connecting to cloudant at: " + cloudantProperties.getProtocol() + "://" + cloudantProperties.getHost() + ":" + cloudantProperties.getPort());
-            final CloudantClient cloudantClient = ClientBuilder.url(new URL(cloudantProperties.getProtocol() +"://"+ cloudantProperties.getHost() + ":" + cloudantProperties.getPort()))
-                    .username(cloudantProperties.getUsername())
-                    .password(cloudantProperties.getPassword())
-                    .build();
-            
-            cloudant = cloudantClient.database(cloudantProperties.getDatabase(), true);
-            
-            
-            // create the design document if it doesn't exist
-            if (!cloudant.contains("_design/username_searchIndex")) {
-                final Map<String, Object> names = new HashMap<String, Object>();
-                names.put("index", "function(doc){index(\"usernames\", doc.username); }");
-
-                final Map<String, Object> indexes = new HashMap<>();
-                indexes.put("usernames", names);
-
-                final Map<String, Object> view_ddoc = new HashMap<>();
-                view_ddoc.put("_id", "_design/username_searchIndex");
-                view_ddoc.put("indexes", indexes);
-
-                cloudant.save(view_ddoc);        
-            }
-            
-        } catch (MalformedURLException e) {
-            logger.error(e.getMessage(), e);
-            throw e;
-        }
-		final Base64 base64 = new Base64(true);
-                secret = base64.decode(jwtProperties.getKey());
-                this.jwtEnabled = jwtProperties.getEnabled();
-        
-
+        secret = new Base64(true).decode(jwtProperties.getKey());
+        jwtEnabled = jwtProperties.getEnabled();
     }
     
     private Database getCloudantDatabase()  {
@@ -105,6 +69,7 @@ public class CustomerController {
     }
 
 	public String checkJWT(String authHeader) {
+		// TODO this should be moved to separate class
 
 		// split the string after the bearer and validate it
 		try {
@@ -147,7 +112,7 @@ public class CustomerController {
      * @return customer by username
      */
     @RequestMapping(value = "/customer/search", method = RequestMethod.GET)
-    @ResponseBody ResponseEntity<?> searchCustomers(@RequestHeader Map<String, String> headers, @RequestParam(required=true) String username) {
+    @ResponseBody ResponseEntity<?> searchCustomers(@RequestHeader Map<String, String> headers, @RequestParam(required=false) String username) {
         try {
         	
         	if (username == null) {

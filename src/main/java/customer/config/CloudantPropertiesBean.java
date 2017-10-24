@@ -1,5 +1,8 @@
 package customer.config;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +16,20 @@ public class CloudantPropertiesBean {
 	private String protocol;
 	private int port;
 	private String database;
+	
+	public CloudantPropertiesBean() {
+		super();
+	}
+	public CloudantPropertiesBean(String username, String password, String host, String protocol, int port,
+			String database) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.host = host;
+		this.protocol = protocol;
+		this.port = port;
+		this.database = database;
+	}
 	
 	public String getUsername() {
 		return username;
@@ -51,5 +68,7 @@ public class CloudantPropertiesBean {
 		this.database = database;
 	}
 	
-
+	public URL buildURL() throws MalformedURLException {
+		return new URL(getProtocol() +"://"+ getHost() + ":" + getPort());
+	}
 }

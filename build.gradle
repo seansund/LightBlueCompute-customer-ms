@@ -49,6 +49,8 @@ dependencies {
     compile('com.nimbusds:nimbus-jose-jwt:4.23')
     testCompile('junit:junit:[4,)')
 	testCompile('org.springframework:spring-test')
+	testCompile('com.jayway.jsonpath:json-path')
+	testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 }
 
 test {
