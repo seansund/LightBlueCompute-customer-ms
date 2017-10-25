@@ -2,15 +2,12 @@ package customer;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +26,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.cloudant.client.api.Database;
 import com.cloudant.client.api.model.Response;
 import com.cloudant.client.org.lightcouch.NoDocumentException;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.SignedJWT;
 
 import customer.config.JWTPropertiesBean;
 import customer.model.Customer;
@@ -51,54 +45,29 @@ public class CustomerController {
     @Autowired
     private CustomerDatabaseBuilder dbBuilder;
     
-    private boolean jwtEnabled;
-    private byte[] secret;
+	protected JWTChecker jwtChecker;
     private Database cloudant;
+    
+    public CustomerController() {
+    }
+    public CustomerController(Database cloudant, boolean jwtEnabled, String secretKey) {
+    		this(cloudant, new JWTChecker(jwtEnabled, secretKey));
+    }
+    public CustomerController(Database cloudant, JWTChecker jwtChecker) {
+		this.cloudant = cloudant;
+		this.jwtChecker = jwtChecker;
+    }
     
     @PostConstruct
     protected void init() throws MalformedURLException {
-    		System.out.println("Init!!!");
         cloudant = dbBuilder.createDatabase();
         
-        secret = new Base64(true).decode(jwtProperties.getKey());
-        jwtEnabled = jwtProperties.getEnabled();
+        jwtChecker = new JWTChecker(jwtProperties.getEnabled(), jwtProperties.getKey());
     }
     
-    private Database getCloudantDatabase()  {
+    protected Database getCloudantDatabase()  {
         return cloudant;
     }
-
-	public String checkJWT(String authHeader) {
-		// TODO this should be moved to separate class
-
-		// split the string after the bearer and validate it
-		try {
-		final String[] arr = authHeader.split("\\s+");
-		final String jwt = arr[1];
-
-		if (jwt.length()==0) return "Invalid authorization header";
-			final SignedJWT signedJWT = SignedJWT.parse(jwt);
-			final JWSVerifier verifier = new MACVerifier(secret);
-
-			if (!signedJWT.verify(verifier) ||
-              signedJWT.getJWTClaimsSet().getIssuer() == null || 
-              !signedJWT.getJWTClaimsSet().getIssuer().equals("apic")) {
-				return "Unable to verify JWT token";
-			} else if (signedJWT.getJWTClaimsSet().getExpirationTime() == null ||
-              signedJWT.getJWTClaimsSet().getExpirationTime().before(Calendar.getInstance().getTime())) {
-				return "JWT token expired";
-			} else if (signedJWT.getJWTClaimsSet().getNotBeforeTime() != null &&
-			  signedJWT.getJWTClaimsSet().getNotBeforeTime().after(Calendar.getInstance().getTime())) {
-				return "JWT token invalid";
-			}
-		} catch (Exception e) {
-			return "Invalid JWT token";
-		}
-		
-		return "";
-	}
-    
-
     
     /**
      * check
@@ -133,8 +102,6 @@ public class CustomerController {
         
     }
 
-    
-
     /**
      * @return all customer
      */
@@ -144,8 +111,8 @@ public class CustomerController {
         headers.putAll(hdrs);
         try {
 		System.out.println(headers);
-                if (jwtEnabled) {
-		    String res = checkJWT(headers.get("Authorization"));
+                if (jwtChecker.isEnabled()) {
+		    String res = jwtChecker.checkJWTHeader(headers.get("Authorization"));
 		    if (!res.equals("")) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
                 }
         	final String customerId = headers.get("Ibm-App-User");
@@ -252,7 +219,7 @@ public class CustomerController {
         	}
         	
         	logger.info("caller: " + customerId);
-			if (!customerId.equals("id")) {
+			if (!customerId.equals(id)) {
         		// if i'm getting a customer ID that doesn't match my own ID, then return 401
         		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         	}
@@ -268,7 +235,7 @@ public class CustomerController {
             // TODO: hash password
             cust.setPassword(payload.getPassword());
             
-            cloudant.save(payload);
+            cloudant.save(cust);
         } catch (NoDocumentException e) {
             logger.error("Customer not found: " + id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with ID " + id + " not found");
@@ -302,12 +269,6 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting customer: " + ex.toString());
         }
         return ResponseEntity.ok().build();
-    }
-
-    private Iterable<Customer> failGood(@RequestHeader Map<String, String> headers) {
-        // Simply return an empty array
-        ArrayList<Customer> inventoryList = new ArrayList<Customer>();
-        return inventoryList;
     }
 
 }

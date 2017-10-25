@@ -47,6 +47,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile group: 'com.cloudant', name:'cloudant-client', version: '2.7.0'
     compile('com.nimbusds:nimbus-jose-jwt:4.23')
+	testCompile('org.hamcrest:hamcrest-core')
     testCompile('junit:junit:[4,)')
 	testCompile('org.springframework:spring-test')
 	testCompile('com.jayway.jsonpath:json-path')
